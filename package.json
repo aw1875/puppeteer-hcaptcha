@@ -1,0 +1,32 @@
+{
+  "name": "puppeteer-hcapthca",
+  "version": "1.0.0",
+  "description": "A library to solve hcaptcha challenges that are automated within puppeteer",
+  "main": "hcaptcha.js",
+  "bundleDependencies": false,
+  "dependencies": {
+    "axios": "^0.21.1",
+    "puppeteer": "^8.0.0",
+    "puppeteer-extra": "^3.1.18",
+    "puppeteer-extra-plugin-stealth": "^2.7.6",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aw1875/puppeteer-hcaptcha.git"
+  },
+  "keywords": [
+    "puppeteer",
+    "hcaptcha",
+    "hcpatcha",
+    "solver",
+    "puppeteerhcaptcha"
+  ],
+  "author": "Adam Wolf",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aw1875/puppeteer-hcaptcha/issues"
+  },
+  "homepage": "https://github.com/aw1875/puppeteer-hcaptcha#readme"
+}
