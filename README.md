@@ -1,6 +1,6 @@
 ## hCaptcha solver for puppeteer
 
-A library to solve hcaptcha challenges that are automated within puppeteer
+A library to solve hcaptcha challenges that are automated within puppeteer. Automatically sets response values where they should be so the only thing left for you is submitting the page!
 
 ## Install
 
