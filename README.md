@@ -39,7 +39,7 @@ puppeteer.use(pluginStealth());
     await hcaptcha(browser, page);
 
     // The captcha has been solved and can be submitted now.
-    // This should be the last function on your page if you
+    // This should be the last function on your page if you're
     // required to fill out other information on the page so 
     // We don't have to worry about the response token expiring
 })();
