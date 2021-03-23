@@ -23,7 +23,7 @@ await hcaptchaToken(url, client)
 - `url` - `string`: url of page with captcha on it
 - `client` - Google Vision ImageAnnotatorClient Type
 
-### Automatically set respone value ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demo/solve.js))
+### Automatically set respone value ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/solve.js))
 
 ```javascript
 // Require puppeteer extra, puppeteer stealth, google vision
@@ -79,7 +79,7 @@ puppeteer.use(pluginStealth());
 })();
 ```
 
-### Return response token only ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demo/token.js))
+### Return response token only ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/token.js))
 ```javascript
 // Require puppeteer extra, puppeteer stealth, google vision
 const puppeteer = require('puppeteer-extra')
