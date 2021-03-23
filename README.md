@@ -114,7 +114,7 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
-### 2.0.0 - (March 23, 2021)
+### 2.0.0 (March 23, 2021)
 
 - Added Google Vision for image recognition to speed up the process
 - Added ability to solve captcha on a page or just return the response token
