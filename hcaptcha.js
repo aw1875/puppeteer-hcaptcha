@@ -2,12 +2,11 @@ const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
 const axios = require("axios");
-const {
-  rdn,
-  randomTrueFalse,
-  uuid,
-  getMouseMovements,
-} = require("./src/utils");
+const { rdn, getMouseMovements } = require("./src/utils");
+require("@google-cloud/vision");
+
+// Setup Google Vision Client
+let client;
 
 puppeteer.use(pluginStealth());
 
@@ -31,7 +30,7 @@ async function getHSW(host, sitekey) {
 
   const [page] = await browser.pages();
   await page.addScriptTag({
-    url: "https://assets.hcaptcha.com/c/0f75558d/hsw.js",
+    url: "https://assets.hcaptcha.com/c/6043b6da/hsw.js",
   });
 
   let hswResponse = await page.evaluate(
@@ -43,72 +42,134 @@ async function getHSW(host, sitekey) {
   return [hswResponse, response["c"]];
 }
 
-async function tryToSolve(sitekey, host, headers) {
+async function getAnswers(request_image, tasks) {
+  let answers = new Map();
+  for (const task of tasks) {
+    await client.objectLocalization(task.datapoint_uri).then((res) => {
+      let [data] = res;
+      if (
+        data.localizedObjectAnnotations.find(
+          (i) =>
+            i.name.toUpperCase() === request_image.toUpperCase() &&
+            i.score > 0.5
+        )
+      ) {
+        answers[task.task_key] = "true";
+      } else {
+        answers[task.task_key] = "false";
+      }
+    });
+  }
+
+  return answers;
+}
+
+async function tryToSolve(userAgent, sitekey, host) {
   // Get our hsw response as a variable so we can post for our response token
   let hswResponse = await getHSW(host, sitekey);
 
+  let headers = {
+    Authority: "hcaptcha.com",
+    Accept: "application/json",
+    "User-Agent": userAgent,
+    "Content-Type": "application/x-www-form-urlencoded",
+    Origin: "https://assets.hcaptcha.com",
+    "Sec-Fetch-Site": "same-site",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Dest": "empty",
+    "Accept-Language": "en-US,en;q=0.9",
+  };
+
   let timestamp = Date.now() + rdn(30, 120);
-  response = await request({
-    method: "post",
-    headers,
-    json: true,
-    url: "https://hcaptcha.com/getcaptcha",
-    form: {
-      sitekey,
-      host,
-      n: hswResponse[0],
-      c: JSON.stringify(hswResponse[1]),
-      motionData: {
-        st: timestamp,
-        dct: timestamp,
-        mm: getMouseMovements(timestamp),
+  try {
+    response = await request({
+      method: "post",
+      headers,
+      json: true,
+      url: "https://hcaptcha.com/getcaptcha",
+      form: {
+        sitekey,
+        host,
+        n: hswResponse[0],
+        c: JSON.stringify(hswResponse[1]),
+        motionData: {
+          st: timestamp,
+          dct: timestamp,
+          mm: getMouseMovements(timestamp),
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return null;
+  }
 
   if (response.generated_pass_UUID) {
     return response.generated_pass_UUID;
   }
 
+  const requestImageArray = response.requester_question.en.split(" ");
+  const request_image = requestImageArray[requestImageArray.length - 1];
+
   const key = response.key;
   const tasks = response.tasklist;
   const job = response.request_type;
   timestamp = Date.now() + rdn(30, 120);
-  const answers = tasks.reduce(
-    (accum, t) => ({ ...accum, [t.task_key]: randomTrueFalse() }),
-    {}
-  );
+
+  // Get Answers
+  const answers = await getAnswers(request_image, tasks);
+
+  // Get new hsw values
+  hswResponse = await getHSW(host, sitekey);
+
   const captchaResponse = {
-    answers,
-    sitekey,
-    serverdomain: host,
     job_mode: job,
-    motionData: {
+    answers,
+    serverdomain: host,
+    sitekey,
+    motionData: JSON.stringify({
       st: timestamp,
       dct: timestamp,
       mm: getMouseMovements(timestamp),
-    },
+    }),
+    n: hswResponse[0],
+    c: JSON.stringify(hswResponse[1]),
   };
 
-  response = await request(`https://hcaptcha.com/checkcaptcha/${key}`, {
-    method: "post",
-    headers,
-    json: true,
-    form: captchaResponse,
-  });
+  headers = {
+    Authority: "hcaptcha.com",
+    Accept: "application/json",
+    "User-Agent": userAgent,
+    "Content-Type": "application/json",
+    Origin: "https://assets.hcaptcha.com",
+    "Sec-Fetch-Site": "same-site",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Dest": "empty",
+    "Accept-Language": "en-US,en;q=0.9",
+  };
+
+  try {
+    response = await request(`https://hcaptcha.com/checkcaptcha/${key}`, {
+      method: "post",
+      headers,
+      json: true,
+      body: captchaResponse,
+    });
+  } catch {
+    return null;
+  }
 
   if (response.generated_pass_UUID) {
     return response.generated_pass_UUID;
   }
 }
 
-async function solveCaptcha(headers, host) {
-  const siteKey = uuid();
-
+async function solveCaptcha(userAgent, siteKey, host) {
   try {
-    const result = await tryToSolve(siteKey, host, headers);
-    if (result) {
-      return result;
+    while (true) {
+      const result = await tryToSolve(userAgent, siteKey, host);
+      if (result && result !== null) {
+        return result;
+      }
     }
   } catch (e) {
     if (e.statusCode === 429) {
@@ -120,7 +181,10 @@ async function solveCaptcha(headers, host) {
   }
 }
 
-async function hcaptcha(browser, page) {
+async function hcaptcha(browser, page, visionClient) {
+  // Set client passed in to Google Client
+  client = await visionClient;
+  
   // Get useragent from browser which is super useful paired with puppeteer stealth
   const userAgent = await browser.userAgent();
 
@@ -134,25 +198,70 @@ async function hcaptcha(browser, page) {
     ).src;
     const urlParams = new URLSearchParams(iframesrc);
 
-    while (true) {
-      try {
-        // Pass useragent and host value to solveCaptcha
-        let response = await solveCaptcha(userAgent, urlParams.get("host"));
-
-        // Once we have the response set the required elements to the response
-        document.querySelector('[name="h-captcha-response"]').value = response;
-        document.querySelector(
-          '[name="g-recaptcha-response"]'
-        ).value = response;
-        break;
-      } catch {
-        // Keep retrying
-      }
-    }
+    let response = await solveCaptcha(
+      userAgent,
+      urlParams.get("sitekey"),
+      urlParams.get("host")
+    );
+    document.querySelector('[name="h-captcha-response"]').value = response;
+    document.querySelector('[name="g-recaptcha-response"]').value = response;
   }, userAgent);
 
-  // Submit form
   return;
 }
 
-module.exports = hcaptcha;
+async function hcaptchaToken(url, visionClient) {
+  // Create token var
+  let token;
+
+  // Set client passed in to Google Client
+  if (!visionClient) {
+    return undefined
+  }
+
+  client = await visionClient;
+
+  const browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
+    headless: true,
+    args: [
+      `--window-size=600,1000`,
+      "--window-position=000,000",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      '--user-data-dir="/tmp/chromium"',
+      "--disable-web-security",
+      "--disable-features=site-per-process"
+    ],
+  });
+
+  // Get browser pages
+  const [page] = await browser.pages();
+  await page.goto(url)
+  await page.setDefaultNavigationTimeout(0);
+  
+  // Get useragent from browser which is super useful paired with puppeteer stealth
+  const userAgent = await browser.userAgent();
+
+  // Expose the page to our solveCaptcha function so we can utilize it
+  await page.exposeFunction("solveCaptcha", solveCaptcha);
+
+  token = await page.evaluate(async (userAgent) => {
+    // Get hcaptcha iframe so we can get the host value
+    const iframesrc = document.querySelector(
+      'iframe[src*="assets.hcaptcha.com"]'
+    ).src;
+    const urlParams = new URLSearchParams(iframesrc);
+
+    return await solveCaptcha(
+      userAgent,
+      urlParams.get("sitekey"),
+      urlParams.get("host")
+    );
+  }, userAgent);
+
+  return token;
+}
+
+
+module.exports = { hcaptcha, hcaptchaToken };

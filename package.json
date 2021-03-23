@@ -1,10 +1,11 @@
 {
   "name": "puppeteer-hcaptcha",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "A library to solve hcaptcha challenges that are automated within puppeteer",
   "main": "hcaptcha.js",
   "bundleDependencies": false,
   "dependencies": {
+    "@google-cloud/vision": "^2.3.1",
     "axios": "^0.21.1",
     "puppeteer": "^8.0.0",
     "puppeteer-extra": "^3.1.18",
