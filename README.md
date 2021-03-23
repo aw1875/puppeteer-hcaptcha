@@ -46,9 +46,9 @@ puppeteer.use(pluginStealth());
 
 (async () => {
     // Instantiate a new browser object
-    // Ignore errors assocaited to https
+    // Ignore errors associated to https
     // Can be headless but for example sake we want to show the browser
-    // Set your desired arguements for your puppeteer browser
+    // Set your desired arguments for your puppeteer browser
     const browser = await puppeteer.launch({
         ignoreHTTPSErrors: true,
         headless: false,
