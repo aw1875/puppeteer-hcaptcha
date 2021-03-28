@@ -114,6 +114,9 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 2.0.1 (March 28, 2021)
+- Fixed issues with cloudflare sites not returning solved token (see [#2](https://github.com/aw1875/puppeteer-hcaptcha/issues/2)).
+
 ### 2.0.0 (March 23, 2021)
 
 - Added Google Vision for image recognition to speed up the process
