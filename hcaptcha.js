@@ -33,13 +33,19 @@ async function getHSW(host, sitekey) {
     url: "https://assets.hcaptcha.com/c/6043b6da/hsw.js",
   });
 
-  let hswResponse = await page.evaluate(
-    (response) => hsw(response.c.req),
-    response
-  );
-  browser.close();
+  try {
+    let hswResponse = await page.evaluate(
+      (response) => hsw(response.c.req),
+      response
+    );
+    
+    await browser.close();
+    return [hswResponse, response["c"]];
+  } catch {
 
-  return [hswResponse, response["c"]];
+    await browser.close();
+    return null;
+  }
 }
 
 async function getAnswers(request_image, tasks) {
@@ -82,23 +88,41 @@ async function tryToSolve(userAgent, sitekey, host) {
 
   let timestamp = Date.now() + rdn(30, 120);
   try {
-    response = await request({
-      method: "post",
-      headers,
-      json: true,
-      url: "https://hcaptcha.com/getcaptcha",
-      form: {
-        sitekey,
-        host,
-        n: hswResponse[0],
-        c: JSON.stringify(hswResponse[1]),
-        motionData: {
-          st: timestamp,
-          dct: timestamp,
-          mm: getMouseMovements(timestamp),
+    if (hswResponse === null) {
+      response = await request({
+        method: "post",
+        headers,
+        json: true,
+        url: "https://hcaptcha.com/getcaptcha",
+        form: {
+          sitekey,
+          host,
+          motionData: {
+            st: timestamp,
+            dct: timestamp,
+            mm: getMouseMovements(timestamp),
+          },
         },
-      },
-    });
+      });
+    } else {
+      response = await request({
+        method: "post",
+        headers,
+        json: true,
+        url: "https://hcaptcha.com/getcaptcha",
+        form: {
+          sitekey,
+          host,
+          n: hswResponse[0],
+          c: JSON.stringify(hswResponse[1]),
+          motionData: {
+            st: timestamp,
+            dct: timestamp,
+            mm: getMouseMovements(timestamp),
+          },
+        },
+      });
+    }
   } catch {
     return null;
   }
@@ -121,19 +145,36 @@ async function tryToSolve(userAgent, sitekey, host) {
   // Get new hsw values
   hswResponse = await getHSW(host, sitekey);
 
-  const captchaResponse = {
-    job_mode: job,
-    answers,
-    serverdomain: host,
-    sitekey,
-    motionData: JSON.stringify({
-      st: timestamp,
-      dct: timestamp,
-      mm: getMouseMovements(timestamp),
-    }),
-    n: hswResponse[0],
-    c: JSON.stringify(hswResponse[1]),
-  };
+  // Check answers
+  if (hswResponse === null) {
+    captchaResponse = {
+      job_mode: job,
+      answers,
+      serverdomain: host,
+      sitekey,
+      motionData: JSON.stringify({
+        st: timestamp,
+        dct: timestamp,
+        mm: getMouseMovements(timestamp),
+      }),
+      n: null,
+      c: "null",
+    };
+  } else {
+    captchaResponse = {
+      job_mode: job,
+      answers,
+      serverdomain: host,
+      sitekey,
+      motionData: JSON.stringify({
+        st: timestamp,
+        dct: timestamp,
+        mm: getMouseMovements(timestamp),
+      }),
+      n: hswResponse[0],
+      c: JSON.stringify(hswResponse[1]),
+    };
+  }
 
   headers = {
     Authority: "hcaptcha.com",
@@ -191,6 +232,9 @@ async function hcaptcha(browser, page, visionClient) {
   // Expose the page to our solveCaptcha function so we can utilize it
   await page.exposeFunction("solveCaptcha", solveCaptcha);
 
+  // Wait for iframe to load
+  await page.waitForSelector('iframe[src*="assets.hcaptcha.com"]');
+
   await page.evaluate(async (userAgent) => {
     // Get hcaptcha iframe so we can get the host value
     const iframesrc = document.querySelector(
@@ -211,9 +255,6 @@ async function hcaptcha(browser, page, visionClient) {
 }
 
 async function hcaptchaToken(url, visionClient) {
-  // Create token var
-  let token;
-
   // Set client passed in to Google Client
   if (!visionClient) {
     return undefined
@@ -246,21 +287,23 @@ async function hcaptchaToken(url, visionClient) {
   // Expose the page to our solveCaptcha function so we can utilize it
   await page.exposeFunction("solveCaptcha", solveCaptcha);
 
-  token = await page.evaluate(async (userAgent) => {
+  // Wait for iframe to load
+  await page.waitForSelector('iframe[src*="assets.hcaptcha.com"]');
+
+  let captchaData = await page.evaluate(async() => {
     // Get hcaptcha iframe so we can get the host value
     const iframesrc = document.querySelector(
       'iframe[src*="assets.hcaptcha.com"]'
     ).src;
     const urlParams = new URLSearchParams(iframesrc);
 
-    return await solveCaptcha(
-      userAgent,
-      urlParams.get("sitekey"),
-      urlParams.get("host")
-    );
-  }, userAgent);
+    return [urlParams.get('host'), urlParams.get('sitekey')];
+  });
 
-  return token;
+  await browser.close()
+
+  // Solve Captcha
+  return await solveCaptcha(userAgent, captchaData[1], captchaData[0]);
 }
 
 
