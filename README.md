@@ -1,6 +1,6 @@
 ## hCaptcha solver for puppeteer
 
-A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token.
+A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is 2-12 seconds (if Google isn't rate limiting for too many requests, otherwise it can take much longer or possibly fail).
 
 ## Install
 
@@ -20,7 +20,7 @@ await hcaptcha(browser, page, client);
 ```javascript
 await hcaptchaToken(url, client)
 ```
-- `url` - `string`: url of page with captcha on it
+- `url`:`string` - url of page with captcha on it
 - `client` - Google Vision ImageAnnotatorClient Type
 
 ### Automatically set respone value ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/solve.js))
@@ -113,6 +113,9 @@ puppeteer.use(pluginStealth());
 - Thanks to [Futei](https://github.com/Futei/SineCaptcha), [JimmyLaurent](https://github.com/JimmyLaurent/hcaptcha-solver/), [Nayde](https://github.com/nayde-fr), [DinoHorvat](https://github.com/dinohorvat), and [Tal](https://github.com/JustTalDevelops/)
 
 ## Changelog
+
+### 2.0.2 (April 2, 2021)
+- Made changes to requests based on changes hCaptcha made. Added list of User Agents so that they are randomized on request (seems to speed up response time generally)
 
 ### 2.0.1 (March 28, 2021)
 - Fixed issues with cloudflare sites not returning solved token (see [#2](https://github.com/aw1875/puppeteer-hcaptcha/issues/2)).
