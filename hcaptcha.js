@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
-const userAgents = JSON.parse(require('fs').readFileSync('./src/useragents.json'));
+const userAgents = JSON.parse(require('fs').readFileSync(`${__dirname}/src/useragents.json`));
 const { rdn, getMouseMovements } = require("./src/utils");
 require("@google-cloud/vision");
 
