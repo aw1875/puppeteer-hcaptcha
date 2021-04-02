@@ -114,8 +114,10 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
-### 2.0.2 (April 2, 2021)
+### 2.0.2 - 2.0.3 (April 2, 2021)
 - Made changes to requests based on changes hCaptcha made. Added list of User Agents so that they are randomized on request (seems to speed up response time generally)
+
+- Fixed issue finding useragents file
 
 ### 2.0.1 (March 28, 2021)
 - Fixed issues with cloudflare sites not returning solved token (see [#2](https://github.com/aw1875/puppeteer-hcaptcha/issues/2)).
