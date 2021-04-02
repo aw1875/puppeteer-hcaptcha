@@ -6,7 +6,6 @@
   "bundleDependencies": false,
   "dependencies": {
     "@google-cloud/vision": "^2.3.1",
-    "axios": "^0.21.1",
     "puppeteer": "^8.0.0",
     "puppeteer-extra": "^3.1.18",
     "puppeteer-extra-plugin-stealth": "^2.7.6",
