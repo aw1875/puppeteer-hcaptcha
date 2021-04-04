@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-hcaptcha",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "A library to solve hcaptcha challenges that are automated within puppeteer",
   "main": "hcaptcha.js",
   "bundleDependencies": false,
