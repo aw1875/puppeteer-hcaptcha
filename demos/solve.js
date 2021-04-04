@@ -44,8 +44,8 @@ puppeteer.use(pluginStealth());
     // Remove the page's default timeout function
     await page.setDefaultNavigationTimeout(0);
 
-    // Call hcaptcha method passing in our browser, page, and google vision client
-    await hcaptcha(browser, page, client);
+    // Call hcaptcha method passing in our page and google vision client
+    await hcaptcha(page, client);
 
     // Your page is ready to submit. Captcha solving should be the last function on your page so we don't have to worry about the response token expiring.
 })();

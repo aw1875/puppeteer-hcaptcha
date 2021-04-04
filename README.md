@@ -2,6 +2,8 @@
 
 A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is 2-12 seconds (if Google isn't rate limiting for too many requests, otherwise it can take much longer or possibly fail).
 
+<img src="images/demo.gif" height="250px"/>
+
 ## Install
 
 ```bash
@@ -11,16 +13,15 @@ npm i puppeteer-hcaptcha
 ## Usage
 
 ```javascript
-await hcaptcha(browser, page, client);
+await hcaptcha(page, client);
 ```
-- `browser` - Puppteer Browser Type
 - `page` - Puppeteer Page Type
 - `client` - Google Vision ImageAnnotatorClient Type
 
 ```javascript
 await hcaptchaToken(url, client)
 ```
-- `url`:`string` - url of page with captcha on it
+- `url` - `string`: url of page with captcha on it
 - `client` - Google Vision ImageAnnotatorClient Type
 
 ### Automatically set respone value ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/solve.js))
@@ -72,8 +73,8 @@ puppeteer.use(pluginStealth());
     // Remove the page's default timeout function
     await page.setDefaultNavigationTimeout(0);
 
-    // Call hcaptcha method passing in our browser, page, and google vision client
-    await hcaptcha(browser, page, client);
+    // Call hcaptcha method passing in our page and google vision client
+    await hcaptcha(page, client);
 
     // Your page is ready to submit. Captcha solving should be the last function on your page so we don't have to worry about the response token expiring.
 })();
@@ -113,6 +114,9 @@ puppeteer.use(pluginStealth());
 - Thanks to [Futei](https://github.com/Futei/SineCaptcha), [JimmyLaurent](https://github.com/JimmyLaurent/hcaptcha-solver/), [Nayde](https://github.com/nayde-fr), [DinoHorvat](https://github.com/dinohorvat), and [Tal](https://github.com/JustTalDevelops/)
 
 ## Changelog
+
+### 3.0.0 (April 4, 2021)
+- Big changes to solving logic to follow changes that hCaptcha has made to their requests.
 
 ### 2.0.2 - 2.0.3 (April 2, 2021)
 - Made changes to requests based on changes hCaptcha made. Added list of User Agents so that they are randomized on request (seems to speed up response time generally)
