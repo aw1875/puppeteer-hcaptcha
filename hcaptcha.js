@@ -73,7 +73,9 @@ async function tryToSolve(userAgent, sitekey, host) {
   let timestamp = Date.now() + rdn(30, 120);
   
   // Setup form for getting tasks list 
-  if (response.c === undefined) {
+  if (response.pass === true) {
+    return response.c.req
+  } else if (response.c === undefined) {
     form = {
       sitekey,
       host,
