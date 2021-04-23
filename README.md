@@ -115,6 +115,10 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.2 (April 23, 2021)
+- Reverted changes made in v3.0.1
+- Created temporary fix for HSJ requests while I look into a proper solution
+
 ### 3.0.1 (April 22, 2021)
 - Pushed a fix for when the response token is received from the initial request
 
@@ -148,3 +152,9 @@ puppeteer.use(pluginStealth());
     - [JimmyLaurent](https://github.com/JimmyLaurent/hcaptcha-solver/) - Initial Node Module
     - [Nayde](https://github.com/nayde-fr) - The idea of porting functionality to be usable through puppeteer
     - [DinoHorvat](https://github.com/dinohorvat) - Help with response token issue (workaround was found out before release)
+
+## Known Issues
+```bash
+UnhandledPromiseRejectionWarning: Error: 13 INTERNAL: Received RST_STREAM with code 2 triggered by internal client error: read ECONNRESET
+```
+Stems from Google Vision API. Occurs when too many requests are sent to Google Vision within a small time period.

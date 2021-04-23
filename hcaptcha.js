@@ -71,11 +71,15 @@ async function tryToSolve(userAgent, sitekey, host) {
   });
 
   let timestamp = Date.now() + rdn(30, 120);
+
+  // Check for HSJ
+  if (response.c.type === "hsj") {
+    console.error('Wrong Challenge Type. Retrying.');
+    return null;
+  }
   
   // Setup form for getting tasks list 
-  if (response.pass === true) {
-    return response.c.req
-  } else if (response.c === undefined) {
+  if (response.c === undefined) {
     form = {
       sitekey,
       host,
@@ -196,6 +200,9 @@ async function tryToSolve(userAgent, sitekey, host) {
   if (checkAnswers.generated_pass_UUID) {
     return checkAnswers.generated_pass_UUID;
   }
+
+  console.error('Wrong Response. Retrying.');
+  return null;
 }
 
 async function solveCaptcha(siteKey, host) {
@@ -209,7 +216,6 @@ async function solveCaptcha(siteKey, host) {
       if (result && result !== null) {
         return result;
       }
-      console.log('Wrong response. Retrying.');
     }
   } catch (e) {
     if (e.statusCode === 429) {
