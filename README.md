@@ -115,6 +115,9 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.1 (April 22, 2021)
+- Pushed a fix for when the response token is received from the initial request
+
 ### 3.0.0 (April 4, 2021)
 - Big changes to solving logic to follow changes that hCaptcha has made to their requests.
 
