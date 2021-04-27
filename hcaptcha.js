@@ -1,6 +1,6 @@
 const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
-const request = require("request-promise-native");
+const got = require("got");
 const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json'));
 const vm = require('vm');
 const { rdn, getMouseMovements } = require("./src/utils");
@@ -11,8 +11,9 @@ let client;
 
 puppeteer.use(pluginStealth());
 
+let hslFile = got('https://assets.hcaptcha.com/c/58296b80/hsl.js').then(x => x.body);
 async function getHSL(req) {
-  const hsl = await request.get('https://assets.hcaptcha.com/c/58296b80/hsl.js');
+  const hsl = await hslFile;
   return new Promise((resolve, reject) => {
     const code = `
     var self = {};
@@ -32,7 +33,7 @@ async function getHSL(req) {
   });
 }
 
-async function getAnswers(request_image, tasks) {
+async function getVisionClientAnswers(tasks, request_image) {
   let answers = new Map();
   for (const task of tasks) {
     await client.objectLocalization(task.datapoint_uri).then((res) => {
@@ -48,7 +49,14 @@ async function getAnswers(request_image, tasks) {
   return answers;
 }
 
-async function tryToSolve(userAgent, sitekey, host) {
+function getRandomAnswers(tasks) {
+  let answers = new Map();
+  for (const task of tasks)
+    answers[task.task_key] = rndtf()
+  return answers;
+}
+
+async function tryToSolve(userAgent, sitekey, host, getAnswers) {
   // Create headers
   let headers = {
     "Authority": "hcaptcha.com",
@@ -63,10 +71,8 @@ async function tryToSolve(userAgent, sitekey, host) {
   };
   
   // Check site config
-  let response = await request({
-    method: 'get',
+  let response = await get({
     headers,
-    json: true,
     url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=1`
   });
 
@@ -104,10 +110,9 @@ async function tryToSolve(userAgent, sitekey, host) {
   }
 
   // Get tasks
-  let getTasks = await request({
+  let getTasks = await get({
     method: "post",
     headers,
-    json: true,
     url: `https://hcaptcha.com/getcaptcha`,
     form: form
   });
@@ -135,13 +140,11 @@ async function tryToSolve(userAgent, sitekey, host) {
   timestamp = Date.now() + rdn(30, 120);
 
   // Get Answers
-  const answers = await getAnswers(request_image, tasks);
+  const answers = await getAnswers(tasks, request_image);
 
   // Renew response
-  response = await request({
-    method: 'get',
+  response = await get({
     headers,
-    json: true,
     url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=1`
   });
 
@@ -190,11 +193,10 @@ async function tryToSolve(userAgent, sitekey, host) {
   };
 
   // Check answers
-  const checkAnswers = await request(`https://hcaptcha.com/checkcaptcha/${key}`, {
+  const checkAnswers = await get(`https://hcaptcha.com/checkcaptcha/${key}`, {
     method: "post",
     headers,
-    json: true,
-    body: captchaResponse,
+    json: captchaResponse,
   });
 
   if (checkAnswers.generated_pass_UUID) {
@@ -205,14 +207,14 @@ async function tryToSolve(userAgent, sitekey, host) {
   return null;
 }
 
-async function solveCaptcha(siteKey, host) {
+async function solveCaptcha(siteKey, host, getAnswers) {
   try {
     while (true) {
       // Get random index for random user agent
       const randomIndex = Math.round(Math.random() * ((userAgents.length - 1) - 0) + 0)
 
       // Attempt to solve hCaptcha
-      const result = await tryToSolve(userAgents[randomIndex].useragent, siteKey, host);
+      const result = await tryToSolve(userAgents[randomIndex].useragent, siteKey, host, getAnswers);
       if (result && result !== null) {
         return result;
       }
@@ -229,8 +231,13 @@ async function solveCaptcha(siteKey, host) {
 }
 
 async function hcaptcha(page, visionClient) {
-  // Set client passed in to Google Client
-  client = await visionClient;
+  let strategy = getVisionClientAnswers;
+
+  if (!visionClient)
+    strategy = getRandomAnswers
+  else 
+    // Set client passed in to Google Client
+    client = await visionClient;
 
   // Expose the page to our solveCaptcha function so we can utilize it
   await page.exposeFunction("solveCaptcha", solveCaptcha);
@@ -247,7 +254,7 @@ async function hcaptcha(page, visionClient) {
 
     return await solveCaptcha(
       urlParams.get("sitekey"),
-      urlParams.get("host")
+      urlParams.get("host"), strategy
     );
   });
 
@@ -259,14 +266,21 @@ async function hcaptcha(page, visionClient) {
   return;
 }
 
-async function hcaptchaToken(url, visionClient) {
+async function hcaptchaToken(url, visionClient, options) {
+  let strategy = getVisionClientAnswers;
   // Set client passed in to Google Client
   if (!visionClient) {
-    return undefined
+    return strategy = getRandomAnswers;
   }
+  else
+    client = await visionClient;
 
-  client = await visionClient;
+  const captchaData = options || await getSiteConfig(url);
+  // Solve Captcha
+  return await solveCaptcha(captchaData[0], captchaData[1], strategy);
+}
 
+async function getSiteConfig(url) {
   const browser = await puppeteer.launch({
     ignoreHTTPSErrors: true,
     headless: true,
@@ -290,11 +304,12 @@ async function hcaptchaToken(url, visionClient) {
     return [urlParams.get('sitekey'), urlParams.get('host')];
   });
 
-  await browser.close()
-
-  // Solve Captcha
-  return await solveCaptcha(captchaData[0], captchaData[1]);
+  await browser.close();
+  return captchaData;
 }
+const instance = got.extend({
+  responseType: 'json', resolveBodyOnly: true
+})
+const get = (...args) => instance(...args).catch(console.error)
 
-
-module.exports = { hcaptcha, hcaptchaToken };
+module.exports = { hcaptcha, hcaptchaToken, getSiteConfig };

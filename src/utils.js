@@ -15,4 +15,9 @@ function getMouseMovements(timestamp) {
   return mouseMovements;
 }
 
-module.exports = { rdn, getMouseMovements };
+// Generate random true or false
+function rdntf() {
+  return rdn(0, 1) ? 'true' : 'false';
+}
+
+module.exports = { rdn, getMouseMovements, rdntf};
