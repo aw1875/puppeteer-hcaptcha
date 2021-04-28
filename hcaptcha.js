@@ -78,8 +78,8 @@ async function tryToSolve(userAgent, sitekey, host, getAnswers) {
 
   let timestamp = Date.now() + rdn(30, 120);
 
-  // Check for HSJ
-  if (response.c.type === "hsj") {
+  // Check for HSJ/HSW
+  if (response.c.type !== "hsl") {
     console.error('Wrong Challenge Type. Retrying.');
     return null;
   }
@@ -310,7 +310,10 @@ async function getSiteConfig(url) {
 const instance = got.extend({
   responseType: 'json', resolveBodyOnly: true
 })
-const get = (...args) => instance(...args).catch(console.error)
+const get = (...args) => instance(...args).catch(err => {
+  console.error(err);
+  throw err;
+})
 
 /*
 .then(x => {
