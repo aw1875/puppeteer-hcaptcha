@@ -20,4 +20,4 @@ function rdntf() {
   return rdn(0, 1) ? 'true' : 'false';
 }
 
-module.exports = { rdn, getMouseMovements, rdntf};
+module.exports = { rdn, getMouseMovements, rdntf };

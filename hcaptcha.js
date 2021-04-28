@@ -1,9 +1,9 @@
 const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const got = require("got");
-const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json'));
+const userAgents = JSON.parse(require('fs').readFileSync('./src/useragents.json'));
 const vm = require('vm');
-const { rdn, getMouseMovements } = require("./src/utils");
+const { rdn, getMouseMovements, rdntf } = require("./src/utils");
 require("@google-cloud/vision");
 
 // Setup Google Vision Client
@@ -52,7 +52,7 @@ async function getVisionClientAnswers(tasks, request_image) {
 function getRandomAnswers(tasks) {
   let answers = new Map();
   for (const task of tasks)
-    answers[task.task_key] = rndtf()
+    answers[task.task_key] = rdntf()
   return answers;
 }
 
@@ -270,13 +270,13 @@ async function hcaptchaToken(url, visionClient, options) {
   let strategy = getVisionClientAnswers;
   // Set client passed in to Google Client
   if (!visionClient) {
-    return strategy = getRandomAnswers;
+    strategy = getRandomAnswers;
   }
   else
     client = await visionClient;
 
   const captchaData = options || await getSiteConfig(url);
-  // Solve Captcha
+  // Solve Captcha  
   return await solveCaptcha(captchaData[0], captchaData[1], strategy);
 }
 
@@ -311,5 +311,12 @@ const instance = got.extend({
   responseType: 'json', resolveBodyOnly: true
 })
 const get = (...args) => instance(...args).catch(console.error)
+
+/*
+.then(x => {
+  console.log(...args, x);
+  return x;
+})
+*/
 
 module.exports = { hcaptcha, hcaptchaToken, getSiteConfig };
