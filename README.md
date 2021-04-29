@@ -115,6 +115,9 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.3 (April 29, 2021)
+- Fixed issue finding useragents file
+
 ### 3.0.2 (April 23, 2021)
 - Reverted changes made in v3.0.1
 - Created temporary fix for HSJ requests while I look into a proper solution
