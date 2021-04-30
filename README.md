@@ -115,6 +115,9 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.4 (April 30, 2021)
+- Added fix for cloudflare sites with regards to HSJ request checks
+
 ### 3.0.3 (April 29, 2021)
 - Fixed issue finding useragents file
 

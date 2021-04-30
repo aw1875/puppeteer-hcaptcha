@@ -73,7 +73,7 @@ async function tryToSolve(userAgent, sitekey, host) {
   let timestamp = Date.now() + rdn(30, 120);
 
   // Check for HSJ
-  if (response.c.type === "hsj") {
+  if (response.c !== undefined && response.c.type === "hsj") {
     console.error('Wrong Challenge Type. Retrying.');
     return null;
   }
