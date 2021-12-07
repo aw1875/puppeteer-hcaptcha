@@ -2,34 +2,76 @@ const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
 const userAgents = JSON.parse(require('fs').readFileSync(`${__dirname}/src/useragents.json`));
-const vm = require('vm');
 const { rdn, getMouseMovements } = require("./src/utils");
+const jwt_decode = require('jwt-decode');
 require("@google-cloud/vision");
 
 // Setup Google Vision Client
 let client;
 
+// Instantiate Version
+let version;
+
 puppeteer.use(pluginStealth());
 
 async function getHSL(req) {
-  const hsl = await request.get('https://assets.hcaptcha.com/c/58296b80/hsl.js');
-  return new Promise((resolve, reject) => {
-    const code = `
-    var self = {};
-    function atob(a) {
-      return new Buffer.from(a, 'base64').toString('binary');
-    }
-  
-    ${hsl}
-  
-    hsl('${req}').then(resolve).catch(reject)
-    `;
-    vm.runInNewContext(code, {
-      Buffer,
-      resolve,
-      reject,
-    });
+  version = jwt_decode(req)["l"].slice("https://newassets.hcaptcha.com/c/".length);
+  const hsl = await request.get(`${jwt_decode(req)["l"]}/hsl.js`);
+
+  const browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
+    headless: true,
+    args: [
+      `--window-size=1300,570`,
+      "--window-position=000,000",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      '--user-data-dir="/tmp/chromium"',
+      "--disable-web-security",
+      "--disable-features=site-per-process"
+    ],
   });
+
+  // Get browser pages
+  const [page] = await browser.pages();
+  await page.addScriptTag({
+    content: hsl
+  });
+
+  const response = await page.evaluate(`hsl("${req}")`);
+  await browser.close();
+
+  return response;
+}
+
+async function getHSW(req) {
+  version = jwt_decode(req)["l"].slice("https://newassets.hcaptcha.com/c/".length);
+  const hsw = await request.get(`${jwt_decode(req)["l"]}/hsw.js`);
+
+  const browser = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
+    headless: true,
+    args: [
+      `--window-size=1300,570`,
+      "--window-position=000,000",
+      "--disable-dev-shm-usage",
+      "--no-sandbox",
+      '--user-data-dir="/tmp/chromium"',
+      "--disable-web-security",
+      "--disable-features=site-per-process"
+    ],
+  });
+
+  // Get browser pages
+  const [page] = await browser.pages();
+  await page.addScriptTag({
+    content: hsw
+  });
+
+  const response = await page.evaluate(`hsw("${req}")`);
+  await browser.close();
+
+  return response;
 }
 
 async function getAnswers(request_image, tasks) {
@@ -55,7 +97,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     "Accept": "application/json",
     "Accept-Language": "en-US,en;q=0.9",
     "Content-Type": "application/x-www-form-urlencoded",
-    "Origin": "https://assets.hcaptcha.com",
+    "Origin": "https://newassets.hcaptcha.com",
     "Sec-Fetch-Site": "same-site",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Dest": "empty",
@@ -94,11 +136,9 @@ async function tryToSolve(userAgent, sitekey, host) {
       sitekey,
       host,
       hl: 'en',
-      motionData: {
-        st: timestamp,
-        mm: getMouseMovements(timestamp)
-      },
-      n: await getHSL(response.c.req),
+      motionData: {},
+      n: response.c.type === "hsl" ? await getHSL(response.c.req) : await getHSW(response.c.req),
+      v: version,
       c: JSON.stringify(response.c)
     }
   }
@@ -108,7 +148,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     method: "post",
     headers,
     json: true,
-    url: `https://hcaptcha.com/getcaptcha`,
+    url: `https://hcaptcha.com/getcaptcha?s=${sitekey}`,
     form: form
   });
 
@@ -126,7 +166,7 @@ async function tryToSolve(userAgent, sitekey, host) {
   }
 
   const key = getTasks.key;
-  if (key.charAt(2) === "_") {
+  if (key.charAt(0) !== "E" && key.charAt(2) === "_") {
     return key;
   }
 
@@ -182,7 +222,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     "Accept": "application/json",
     "Accept-Language": "en-US,en;q=0.9",
     "Content-Type": "application/json",
-    "Origin": "https://assets.hcaptcha.com",
+    "Origin": "https://newassets.hcaptcha.com",
     "Sec-Fetch-Site": "same-site",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Dest": "empty",
@@ -190,7 +230,7 @@ async function tryToSolve(userAgent, sitekey, host) {
   };
 
   // Check answers
-  const checkAnswers = await request(`https://hcaptcha.com/checkcaptcha/${key}`, {
+  const checkAnswers = await request(`https://hcaptcha.com/checkcaptcha/${key}?s=${sitekey}`, {
     method: "post",
     headers,
     json: true,
