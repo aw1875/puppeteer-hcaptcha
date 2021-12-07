@@ -293,7 +293,6 @@ async function hcaptcha(page, visionClient) {
 
   await page.evaluate((token) => {
     document.querySelector('[name="h-captcha-response"]').value = token;
-    document.querySelector('[name="g-recaptcha-response"]').value = token;
   }, token)
 
   return;

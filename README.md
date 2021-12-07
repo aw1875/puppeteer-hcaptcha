@@ -115,6 +115,9 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.6 (December 12, 2021)
+- Removed setting the `g-recaptcha-response` as hCaptcha no longer requires this
+
 ### 3.0.5 (December 12, 2021)
 - Added functions to dynamically get HSW/HSL version for getting tasklist
 - Updated headers to properly request for tokens
