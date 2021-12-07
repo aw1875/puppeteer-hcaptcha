@@ -115,6 +115,10 @@ puppeteer.use(pluginStealth());
 
 ## Changelog
 
+### 3.0.5 (December 12, 2021)
+- Added functions to dynamically get HSW/HSL version for getting tasklist
+- Updated headers to properly request for tokens
+
 ### 3.0.4 (April 30, 2021)
 - Added fix for cloudflare sites with regards to HSJ request checks
 
