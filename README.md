@@ -92,7 +92,7 @@ const { hcaptchaToken } = require('puppeteer-hcaptcha');
   // Log timed result to console
   console.log(`Completed in ${(endTime - startTime) / 1000} seconds`);
 
-  // W0_eyJ0eXAiOiJ...
+  // P0_eyJ0eXAiOiJ...
   console.log(token);
 })();
 ```
