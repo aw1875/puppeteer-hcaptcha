@@ -1,8 +1,8 @@
 ## hCaptcha solver for puppeteer
 
-A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is 2-12 seconds (if Google isn't rate limiting for too many requests, otherwise it can take much longer or possibly fail).
+A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is rougly 20 - 40 seconds with TensorFlow's Image Recognition.
 
-<img src="images/demo.gif" height="250px"/>
+<img src="images/demo.gif" height="500px"/>
 
 ## Install
 
@@ -13,16 +13,14 @@ npm i puppeteer-hcaptcha
 ## Usage
 
 ```javascript
-await hcaptcha(page, client);
+await hcaptcha(page);
 ```
-- `page` - Puppeteer Page Type
-- `client` - Google Vision ImageAnnotatorClient Type
+- `page` [&lt;Page&gt;](https://pptr.dev/#?product=Puppeteer&version=v12.0.1&show=api-class-page) - Puppeteer Page Instance
 
 ```javascript
-await hcaptchaToken(url, client)
+await hcaptchaToken(url)
 ```
-- `url` - `string`: url of page with captcha on it
-- `client` - Google Vision ImageAnnotatorClient Type
+- `url` [&lt;string&gt;](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) - URL of page with captcha on it
 
 ### Automatically set respone value ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/solve.js))
 
@@ -30,17 +28,9 @@ await hcaptchaToken(url, client)
 // Require puppeteer extra, puppeteer stealth, google vision
 const puppeteer = require('puppeteer-extra')
 const pluginStealth = require('puppeteer-extra-plugin-stealth')
-const vision = require("@google-cloud/vision");
 
 // Require our hcaptcha method
 const { hcaptcha } = require('puppeteer-hcaptcha');
-
-// Instantiate a new Google Vision Client
-// This is important so make sure keyFilename points to your credentials
-// Our solver method will be using this to speed up the process
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: "YOUR GOOGLE CREDENTIALS",
-});
 
 // Tell puppeteer to use puppeteer stealth
 puppeteer.use(pluginStealth());
@@ -73,39 +63,37 @@ puppeteer.use(pluginStealth());
     // Remove the page's default timeout function
     await page.setDefaultNavigationTimeout(0);
 
-    // Call hcaptcha method passing in our page and google vision client
-    await hcaptcha(page, client);
+    // Call hcaptcha method passing in our page
+    await hcaptcha(page);
 
     // Your page is ready to submit. Captcha solving should be the last function on your page so we don't have to worry about the response token expiring.
+    /**
+     * Example:
+     * await page.click("loginDiv > loginBtn");
+     */
 })();
 ```
 
 ### Return response token only ([see demo](https://github.com/aw1875/puppeteer-hcaptcha/blob/master/demos/token.js))
 ```javascript
-// Require puppeteer extra, puppeteer stealth, google vision
-const puppeteer = require('puppeteer-extra')
-const pluginStealth = require('puppeteer-extra-plugin-stealth')
-const vision = require("@google-cloud/vision");
-
 // Require our hcaptchaToken method
 const { hcaptchaToken } = require('puppeteer-hcaptcha');
 
-// Instantiate a new Google Vision Client
-// This is important so make sure keyFilename points to your credentials
-// Our solver method will be using this to speed up the process
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: "YOUR GOOGLE CREDENTIALS",
-});
-
-// Tell puppeteer to use puppeteer stealth
-puppeteer.use(pluginStealth());
-
 (async () => {
-    // Call hcaptcha method passing in url and google vision client
-    let token = await hcaptchaToken('URL OF PAGE WITH CAPTCHA ON IT', client);
+  // Create Start Time
+  const startTime = Date.now();
 
-    // W0_eyJ0eXAiOiJ...
-    console.log(token);
+  // Call hcaptchaToken method passing in your url
+  let token = await hcaptchaToken('URL OF PAGE WITH CAPTCHA ON IT');
+
+  // Get End Time
+  const endTime = Date.now();
+
+  // Log timed result to console
+  console.log(`Completed in ${(endTime - startTime) / 1000} seconds`);
+
+  // W0_eyJ0eXAiOiJ...
+  console.log(token);
 })();
 ```
 
@@ -114,6 +102,13 @@ puppeteer.use(pluginStealth());
 - Thanks to [Futei](https://github.com/Futei/SineCaptcha), [JimmyLaurent](https://github.com/JimmyLaurent/hcaptcha-solver/), [Nayde](https://github.com/nayde-fr), [DinoHorvat](https://github.com/dinohorvat), and [Tal](https://github.com/JustTalDevelops/)
 
 ## Changelog
+
+### 4.0.0 (December 13, 2021)
+- Removed Google Cloud Vision from dependencies
+- Integrated TensorFlow Image Recognition instead
+- Created fix for checking answer requests failing
+- Cleaned up functions
+- Documented all functions within code
 
 ### 3.0.6 (December 12, 2021)
 - Removed setting the `g-recaptcha-response` as hCaptcha no longer requires this
@@ -168,6 +163,7 @@ puppeteer.use(pluginStealth());
 
 ## Known Issues
 ```bash
-UnhandledPromiseRejectionWarning: Error: 13 INTERNAL: Received RST_STREAM with code 2 triggered by internal client error: read ECONNRESET
+I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 ```
-Stems from Google Vision API. Occurs when too many requests are sent to Google Vision within a small time period.
+Stems from TensorFlow. Not entirely sure how to fix this but it doesn't impact the solver.

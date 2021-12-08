@@ -1,20 +1,23 @@
 const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
-const userAgents = JSON.parse(require('fs').readFileSync(`${__dirname}/src/useragents.json`));
-const { rdn, getMouseMovements } = require("./src/utils");
 const jwt_decode = require('jwt-decode');
-require("@google-cloud/vision");
 
-// Setup Google Vision Client
-let client;
+const userAgents = JSON.parse(require('fs').readFileSync('./src/useragents.json'));
+const { rdn, tensor, mm } = require("./src/utils");
 
 // Instantiate Version
 let version;
 
+// PluginStealth for any puppeteer instances
 puppeteer.use(pluginStealth());
 
-async function getHSL(req) {
+/**
+ * @description Dynamically get HSL function for returning value needed to solve 
+ * @param {*} req 
+ * @returns response token
+ */
+const getHSL = async (req) => {
   version = jwt_decode(req)["l"].slice("https://newassets.hcaptcha.com/c/".length);
   const hsl = await request.get(`${jwt_decode(req)["l"]}/hsl.js`);
 
@@ -44,7 +47,12 @@ async function getHSL(req) {
   return response;
 }
 
-async function getHSW(req) {
+/**
+ * @description Dynamically get HSW function for returning value needed to solve 
+ * @param {*} req 
+ * @returns response token
+ */
+const getHSW = async (req) => {
   version = jwt_decode(req)["l"].slice("https://newassets.hcaptcha.com/c/".length);
   const hsw = await request.get(`${jwt_decode(req)["l"]}/hsw.js`);
 
@@ -74,12 +82,19 @@ async function getHSW(req) {
   return response;
 }
 
-async function getAnswers(request_image, tasks) {
+/**
+ * @description Use tensforflow image recognition to determine correct answers
+ * @param {*} request_image 
+ * @param {*} tasks 
+ * @returns answers map
+ */
+const getAnswersTF = async (request_image, tasks) => {
   let answers = new Map();
   for (const task of tasks) {
-    await client.objectLocalization(task.datapoint_uri).then((res) => {
+    await tensor(task.datapoint_uri).then((res) => {
       let [data] = res;
-      if (data.localizedObjectAnnotations.find((i) => i.name.toUpperCase() === request_image.toUpperCase() && i.score > 0.5)) {
+
+      if (data !== undefined && data.class.toUpperCase() === request_image.toUpperCase() && data.score > 0.5) {
         answers[task.task_key] = "true";
       } else {
         answers[task.task_key] = "false";
@@ -87,10 +102,17 @@ async function getAnswers(request_image, tasks) {
     });
   }
 
-  return answers;
+  return answers
 }
 
-async function tryToSolve(userAgent, sitekey, host) {
+/**
+ * @description Main solve function that attempts to solve captcha
+ * @param {*} userAgent 
+ * @param {*} sitekey 
+ * @param {*} host 
+ * @returns hCaptcha solved token
+ */
+const tryToSolve = async (userAgent, sitekey, host) => {
   // Create headers
   let headers = {
     "Authority": "hcaptcha.com",
@@ -103,7 +125,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     "Sec-Fetch-Dest": "empty",
     "User-Agent": userAgent
   };
-  
+
   // Check site config
   let response = await request({
     method: 'get',
@@ -119,7 +141,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     console.error('Wrong Challenge Type. Retrying.');
     return null;
   }
-  
+
   // Setup form for getting tasks list 
   if (response.c === undefined) {
     form = {
@@ -128,7 +150,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       hl: 'en',
       motionData: {
         st: timestamp,
-        mm: getMouseMovements(timestamp)
+        mm: mm
       },
     }
   } else {
@@ -136,7 +158,11 @@ async function tryToSolve(userAgent, sitekey, host) {
       sitekey,
       host,
       hl: 'en',
-      motionData: {},
+      motionData: JSON.stringify({
+        st: timestamp,
+        dct: timestamp,
+        mm: mm,
+      }),
       n: response.c.type === "hsl" ? await getHSL(response.c.req) : await getHSW(response.c.req),
       v: version,
       c: JSON.stringify(response.c)
@@ -175,7 +201,7 @@ async function tryToSolve(userAgent, sitekey, host) {
   timestamp = Date.now() + rdn(30, 120);
 
   // Get Answers
-  const answers = await getAnswers(request_image, tasks);
+  const answers = await getAnswersTF(request_image, tasks);
 
   // Renew response
   response = await request({
@@ -195,7 +221,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       motionData: JSON.stringify({
         st: timestamp,
         dct: timestamp,
-        mm: getMouseMovements(timestamp),
+        mm: mm,
       }),
       n: null,
       c: "null",
@@ -209,9 +235,10 @@ async function tryToSolve(userAgent, sitekey, host) {
       motionData: JSON.stringify({
         st: timestamp,
         dct: timestamp,
-        mm: getMouseMovements(timestamp),
+        mm: mm,
       }),
-      n: await getHSL(response.c.req),
+      n: response.c.type === "hsl" ? await getHSL(response.c.req) : await getHSW(response.c.req),
+      v: version,
       c: JSON.stringify(response.c)
     }
   }
@@ -226,7 +253,7 @@ async function tryToSolve(userAgent, sitekey, host) {
     "Sec-Fetch-Site": "same-site",
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Dest": "empty",
-    "User-Agent": userAgent,
+    "User-Agent": userAgent
   };
 
   // Check answers
@@ -245,7 +272,13 @@ async function tryToSolve(userAgent, sitekey, host) {
   return null;
 }
 
-async function solveCaptcha(siteKey, host) {
+/**
+ * @description Sets up userAgent and passes required information to tryToSolveFunction
+ * @param {*} siteKey 
+ * @param {*} host 
+ * @returns hCaptcha solved token
+ */
+const solveCaptcha = async (siteKey, host) => {
   try {
     while (true) {
       // Get random index for random user agent
@@ -268,10 +301,12 @@ async function solveCaptcha(siteKey, host) {
   }
 }
 
-async function hcaptcha(page, visionClient) {
-  // Set client passed in to Google Client
-  client = await visionClient;
-
+/**
+ * @description Setup function for hCaptcha solver using puppeteer
+ * @param {*} page 
+ * @returns null
+ */
+const hcaptcha = async (page) => {
   // Expose the page to our solveCaptcha function so we can utilize it
   await page.exposeFunction("solveCaptcha", solveCaptcha);
 
@@ -298,13 +333,12 @@ async function hcaptcha(page, visionClient) {
   return;
 }
 
-async function hcaptchaToken(url, visionClient) {
-  // Set client passed in to Google Client
-  if (!visionClient) {
-    return undefined
-  }
-
-  client = await visionClient;
+/**
+ * @description Setup function for hCaptcha solver without puppeteer
+ * @param {*} url 
+ * @returns hCaptcha solved token
+ */
+const hcaptchaToken = async (url) => {
 
   const browser = await puppeteer.launch({
     ignoreHTTPSErrors: true,
@@ -325,6 +359,7 @@ async function hcaptchaToken(url, visionClient) {
       'iframe[src*="assets.hcaptcha.com"]'
     ).src;
     const urlParams = new URLSearchParams(iframesrc);
+    console.log(urlParams);
 
     return [urlParams.get('sitekey'), urlParams.get('host')];
   });
@@ -334,6 +369,5 @@ async function hcaptchaToken(url, visionClient) {
   // Solve Captcha
   return await solveCaptcha(captchaData[0], captchaData[1]);
 }
-
 
 module.exports = { hcaptcha, hcaptchaToken };

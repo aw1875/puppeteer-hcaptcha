@@ -1,15 +1,18 @@
 {
   "name": "puppeteer-hcaptcha",
   "version": "3.0.6",
-  "description": "A library to solve hcaptcha challenges that are automated within puppeteer",
+  "description": "A library to solve hcaptcha challenges that are automated within puppeteer and without",
   "main": "hcaptcha.js",
-  "bundleDependencies": false,
+  "bundledDependencies": true,
   "dependencies": {
-    "@google-cloud/vision": "^2.3.1",
+    "@tensorflow-models/coco-ssd": "^2.2.2",
+    "@tensorflow/tfjs-node": "^3.11.0",
+    "ghost-cursor": "^1.1.7",
     "jwt-decode": "^3.1.2",
-    "puppeteer": "^8.0.0",
-    "puppeteer-extra": "^3.1.18",
-    "puppeteer-extra-plugin-stealth": "^2.7.6",
+    "node-fetch": "^2.6.1",
+    "puppeteer": "^12.0.1",
+    "puppeteer-extra": "^3.2.3",
+    "puppeteer-extra-plugin-stealth": "^2.9.0",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9"
   },
@@ -21,6 +24,8 @@
     "puppeteer",
     "hcaptcha",
     "solver",
+    "hcaptcha solver",
+    "puppeteer hcaptcha",
     "hcaptcha-solver",
     "puppeteerhcaptcha"
   ],
