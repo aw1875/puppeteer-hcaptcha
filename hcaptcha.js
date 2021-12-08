@@ -3,7 +3,7 @@ const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
 const jwt_decode = require('jwt-decode');
 
-const userAgents = JSON.parse(require('fs').readFileSync('./src/useragents.json'));
+const userAgents = JSON.parse(require('fs').readFileSync(`${__dirname}/src/useragents.json`));
 const { rdn, tensor, mm } = require("./src/utils");
 
 // Instantiate Version

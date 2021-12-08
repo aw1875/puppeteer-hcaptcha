@@ -103,6 +103,9 @@ const { hcaptchaToken } = require('puppeteer-hcaptcha');
 
 ## Changelog
 
+### 4.0.1 (December 13, 2021)
+- Fixed issue where `useragents.json` file couldn't be found
+
 ### 4.0.0 (December 13, 2021)
 - Removed Google Cloud Vision from dependencies
 - Integrated TensorFlow Image Recognition instead
