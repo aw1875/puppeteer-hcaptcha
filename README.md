@@ -2,7 +2,7 @@
 
 A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is rougly 20 - 40 seconds with TensorFlow's Image Recognition.
 
-<img src="images/newdemo.gif" height="500px"/>
+<img src="images/demo.gif" height="400px"/>
 
 ### If you like this project feel free to donate!
 
@@ -107,20 +107,26 @@ const { hcaptchaToken } = require('puppeteer-hcaptcha');
 
 ## Changelog
 
-### 4.0.1 (December 13, 2021)
+### 4.0.2 (December 14, 2021)
+- Setup TensorFlow tasks to run in parallel using `Promise.All` which seems to have drastically improved speeds solving [#23](https://github.com/aw1875/puppeteer-hcaptcha/issues/23)
+- Test results seem to mostly be between the 13 - 16 second range (with a few outliers between 19 - 20)
+- Will continue looking into ways to get back to the old speeds from using Google Cloud Vision
+  - Looking into the potential of using C++ or C# as a backend for true threading with the help of [edge-js](https://github.com/agracio/edge-js) or something similar
+
+### 4.0.1 (December 8, 2021)
 - Fixed issue where `useragents.json` file couldn't be found
 
-### 4.0.0 (December 13, 2021)
+### 4.0.0 (December 8, 2021)
 - Removed Google Cloud Vision from dependencies
 - Integrated TensorFlow Image Recognition instead
 - Created fix for checking answer requests failing
 - Cleaned up functions
 - Documented all functions within code
 
-### 3.0.6 (December 12, 2021)
+### 3.0.6 (December 7, 2021)
 - Removed setting the `g-recaptcha-response` as hCaptcha no longer requires this
 
-### 3.0.5 (December 12, 2021)
+### 3.0.5 (December 7, 2021)
 - Added functions to dynamically get HSW/HSL version for getting tasklist
 - Updated headers to properly request for tokens
 

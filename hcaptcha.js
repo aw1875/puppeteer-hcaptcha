@@ -88,20 +88,30 @@ const getHSW = async (req) => {
  * @param {*} tasks 
  * @returns answers map
  */
-const getAnswersTF = async (request_image, tasks) => {
+ const getAnswersTF = async (request_image, tasks) => {
   let answers = new Map();
-  for (const task of tasks) {
-    await tensor(task.datapoint_uri).then((res) => {
-      let [data] = res;
 
-      if (data !== undefined && data.class.toUpperCase() === request_image.toUpperCase() && data.score > 0.5) {
-        answers[task.task_key] = "true";
-      } else {
-        answers[task.task_key] = "false";
-      }
-    });
+  const threads = [];
+  for (const task of tasks) {
+    threads.push(tensor(task.datapoint_uri));
   }
 
+  try {
+    await Promise.all(asyncCalls).then((results) => {
+      results.forEach((res, index) => {
+
+        let [data] = res;
+
+        if (data !== undefined && data.class.toUpperCase() === request_image.toUpperCase() && data.score > 0.5) {
+          answers[tasks[index].task_key] = "true";
+        } else {
+          answers[tasks[index].task_key] = "false";
+        }
+      })
+    })
+  } catch (err) {
+    console.log(err);
+  }
   return answers
 }
 
