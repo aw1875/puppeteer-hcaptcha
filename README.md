@@ -109,7 +109,7 @@ const { hcaptchaToken } = require('puppeteer-hcaptcha');
 
 ## Changelog
 
-### 4.0.2 (December 14, 2021)
+### 4.1.0 (December 14, 2021)
 - Setup TensorFlow tasks to run in parallel using `Promise.All` which seems to have drastically improved speeds solving [#23](https://github.com/aw1875/puppeteer-hcaptcha/issues/23)
 - Test results seem to mostly be between the 13 - 16 second range (with a few outliers between 19 - 20)
 - Will continue looking into ways to get back to the old speeds from using Google Cloud Vision
