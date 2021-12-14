@@ -90,14 +90,13 @@ const getHSW = async (req) => {
  */
  const getAnswersTF = async (request_image, tasks) => {
   let answers = new Map();
-
   const threads = [];
   for (const task of tasks) {
     threads.push(tensor(task.datapoint_uri));
   }
 
   try {
-    await Promise.all(asyncCalls).then((results) => {
+    await Promise.all(threads).then((results) => {
       results.forEach((res, index) => {
 
         let [data] = res;
