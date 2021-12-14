@@ -1,6 +1,6 @@
 ## hCaptcha solver for puppeteer
 
-A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is rougly 20 - 40 seconds with TensorFlow's Image Recognition.
+A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is rougly 13 - 20 seconds with TensorFlow's Image Recognition.
 
 <img src="images/demo.gif" height="400px"/>
 
@@ -70,7 +70,9 @@ puppeteer.use(pluginStealth());
     // Call hcaptcha method passing in our page
     await hcaptcha(page);
 
-    // Your page is ready to submit. Captcha solving should be the last function on your page so we don't have to worry about the response token expiring.
+    // Your page is ready to submit. 
+    // Captcha solving should be the last function on your page so we 
+    // don't have to worry about the response token expiring.
     /**
      * Example:
      * await page.click("loginDiv > loginBtn");
