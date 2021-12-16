@@ -109,6 +109,9 @@ const { hcaptchaToken } = require('puppeteer-hcaptcha');
 
 ## Changelog
 
+### 4.1.2 (December 16, 2021)
+- Fixed asset url to reflect new hCaptcha asset url
+
 ### 4.1.1 (December 14, 2021)
 - Fixed code inconsistency
 

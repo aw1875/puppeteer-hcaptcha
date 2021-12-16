@@ -320,12 +320,12 @@ const hcaptcha = async (page) => {
   await page.exposeFunction("solveCaptcha", solveCaptcha);
 
   // Wait for iframe to load
-  await page.waitForSelector('iframe[src*="assets.hcaptcha.com"]');
+  await page.waitForSelector('iframe[src*="newassets.hcaptcha.com"]');
 
   const token = await page.evaluate(async () => {
     // Get hcaptcha iframe so we can get the host value
     const iframesrc = document.querySelector(
-      'iframe[src*="assets.hcaptcha.com"]'
+      'iframe[src*="newassets.hcaptcha.com"]'
     ).src;
     const urlParams = new URLSearchParams(iframesrc);
 
@@ -360,12 +360,12 @@ const hcaptchaToken = async (url) => {
   await page.setDefaultNavigationTimeout(0);
 
   // Wait for iframe to load
-  await page.waitForSelector('iframe[src*="assets.hcaptcha.com"]');
+  await page.waitForSelector('iframe[src*="newassets.hcaptcha.com"]');
 
   let captchaData = await page.evaluate(async () => {
     // Get hcaptcha iframe so we can get the host value
     const iframesrc = document.querySelector(
-      'iframe[src*="assets.hcaptcha.com"]'
+      'iframe[src*="newassets.hcaptcha.com"]'
     ).src;
     const urlParams = new URLSearchParams(iframesrc);
     console.log(urlParams);
