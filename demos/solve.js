@@ -1,4 +1,4 @@
-// Require puppeteer extra, puppeteer stealth, google vision
+// Require puppeteer extra and puppeteer stealth
 const puppeteer = require('puppeteer-extra')
 const pluginStealth = require('puppeteer-extra-plugin-stealth')
 
