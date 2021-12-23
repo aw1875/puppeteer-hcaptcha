@@ -5,8 +5,7 @@
   "main": "hcaptcha.js",
   "bundledDependencies": false,
   "dependencies": {
-    "@tensorflow-models/coco-ssd": "^2.2.2",
-    "@tensorflow/tfjs-node": "^3.11.0",
+    "@google-cloud/vision": "^2.4.1",
     "ghost-cursor": "https://github.com/aw1875/ghost-cursor.git",
     "jwt-decode": "^3.1.2",
     "node-fetch": "^2.6.1",
