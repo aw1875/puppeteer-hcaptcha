@@ -2,12 +2,6 @@
 
 A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is 2-12 seconds (if Google isn't rate limiting for too many requests, otherwise it can take much longer or possibly fail).
 
-## Install
-
-```bash
-npm i puppeteer-hcaptcha
-```
-
 ## Usage
 
 ```javascript
@@ -33,7 +27,7 @@ const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const vision = require("@google-cloud/vision");
 
 // Require our hcaptcha method
-const { hcaptcha } = require("puppeteer-hcaptcha");
+const { hcaptcha } = require("./hcaptcha");
 
 // Instantiate a new Google Vision Client
 // This is important so make sure keyFilename points to your credentials
@@ -89,7 +83,7 @@ const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const vision = require("@google-cloud/vision");
 
 // Require our hcaptchaToken method
-const { hcaptchaToken } = require("puppeteer-hcaptcha");
+const { hcaptchaToken } = require("./hcaptcha");
 
 // Instantiate a new Google Vision Client
 // This is important so make sure keyFilename points to your credentials
