@@ -399,4 +399,4 @@ const hcaptchaToken = async (url) => {
     return await solveCaptcha(captchaData[0], captchaData[1]);
 };
 
-module.exports = { hcaptcha, hcaptchaToken };
+module.exports = { hcaptcha, hcaptchaToken, solveCaptcha };
