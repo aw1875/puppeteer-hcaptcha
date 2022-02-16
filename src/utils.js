@@ -1,4 +1,4 @@
-const { path } = require("ghost-cursor");
+const { path } = require("@aw1875/ghost-cursor");
 const tf = require('@tensorflow/tfjs-node');
 const cocoSsd = require('@tensorflow-models/coco-ssd');
 const fetch = require('node-fetch');

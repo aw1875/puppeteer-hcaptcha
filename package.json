@@ -1,13 +1,13 @@
 {
   "name": "puppeteer-hcaptcha",
-  "version": "4.1.4",
+  "version": "4.1.5",
   "description": "A library to solve hcaptcha challenges that are automated within puppeteer and without",
   "main": "hcaptcha.js",
   "bundledDependencies": false,
   "dependencies": {
+    "@aw1875/ghost-cursor": "^1.1.10",
     "@tensorflow-models/coco-ssd": "^2.2.2",
     "@tensorflow/tfjs-node": "^3.11.0",
-    "ghost-cursor": "https://github.com/aw1875/ghost-cursor.git",
     "jwt-decode": "^3.1.2",
     "node-fetch": "^2.6.1",
     "puppeteer": "^12.0.1",
