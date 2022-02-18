@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer-extra");
 const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
 const jwt_decode = require("jwt-decode");
+const unhomoglyph = require('unhomoglyph'); 
 
 const userAgents = JSON.parse(
     require("fs").readFileSync(`${__dirname}/src/useragents.json`)
@@ -108,7 +109,7 @@ const getAnswersTF = async (request_image, tasks) => {
 
                 if (
                     data !== undefined &&
-                    data.class.toUpperCase() === request_image.toUpperCase() &&
+                    unhomoglyph(data.class.toUpperCase().trim()) === unhomoglyph(request_image.toUpperCase().trim()) &&
                     data.score > 0.5
                 ) {
                     answers[tasks[index].task_key] = "true";
@@ -206,7 +207,7 @@ const tryToSolve = async (userAgent, sitekey, host) => {
     // Find what the captcha is looking for user's to click
     const requestImageArray = getTasks.requester_question.en.split(" ");
     let request_image = requestImageArray[requestImageArray.length - 1];
-    if (request_image === "motorbus") {
+    if (unhomoglyph(request_image) === unhomoglyph("motorbus")) {
         request_image = "bus";
     } else {
         request_image = requestImageArray[requestImageArray.length - 1];
@@ -289,9 +290,12 @@ const tryToSolve = async (userAgent, sitekey, host) => {
             json: true,
             body: captchaResponse,
         }
-    );
+    ).catch((error) => {
+        console.error(error.toString());
+        return null;
+    });
 
-    if (checkAnswers.generated_pass_UUID) {
+    if (checkAnswers && checkAnswers.generated_pass_UUID) {
         return checkAnswers.generated_pass_UUID;
     }
 
