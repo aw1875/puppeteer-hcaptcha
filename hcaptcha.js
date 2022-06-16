@@ -328,7 +328,7 @@ const solveCaptcha = async (siteKey, host) => {
             // Reached rate limit, wait 30 sec
             console.log("Rate limited. Waiting 30 seconds.");
             await new Promise((r) => setTimeout(r, 30000));
-        }
+        } else console.log("Error status code while solving answers: " + e.statusCode);
     }
 };
 
@@ -344,18 +344,21 @@ const hcaptcha = async (page) => {
     // Wait for iframe to load
     await page.waitForSelector('iframe[src*="newassets.hcaptcha.com"]');
 
-    const token = await page.evaluate(async () => {
-        // Get hcaptcha iframe so we can get the host value
-        const iframesrc = document.querySelector(
-            'iframe[src*="newassets.hcaptcha.com"]'
-        ).src;
-        const urlParams = new URLSearchParams(iframesrc);
+    let token = null;
+    while(!token || token === null) {
+        token = await page.evaluate(async () => {
+            // Get hcaptcha iframe so we can get the host value
+            const iframesrc = document.querySelector(
+                'iframe[src*="newassets.hcaptcha.com"]'
+            ).src;
+            const urlParams = new URLSearchParams(iframesrc);
 
-        return await solveCaptcha(
-            urlParams.get("sitekey"),
-            urlParams.get("host")
-        );
-    });
+            return await solveCaptcha(
+                urlParams.get("sitekey"),
+                urlParams.get("host")
+            );
+        });
+    }
 
     await page.evaluate((token) => {
         document.querySelector('[name="h-captcha-response"]').value = token;
@@ -396,7 +399,11 @@ const hcaptchaToken = async (url) => {
     await browser.close();
 
     // Solve Captcha
-    return await solveCaptcha(captchaData[0], captchaData[1]);
+    let token = null;
+    while(!token || token === null) {
+        token = await solveCaptcha(captchaData[0], captchaData[1]);
+    }
+    return token;
 };
 
 module.exports = { hcaptcha, hcaptchaToken, solveCaptcha };
