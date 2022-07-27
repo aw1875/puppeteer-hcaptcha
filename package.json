@@ -1,38 +1,38 @@
 {
-  "name": "puppeteer-hcaptcha",
-  "version": "4.1.5",
-  "description": "A library to solve hcaptcha challenges that are automated within puppeteer and without",
-  "main": "hcaptcha.js",
-  "bundledDependencies": false,
-  "dependencies": {
-    "@aw1875/ghost-cursor": "^1.1.10",
-    "@tensorflow-models/coco-ssd": "^2.2.2",
-    "@tensorflow/tfjs-node": "^3.11.0",
-    "jwt-decode": "^3.1.2",
-    "node-fetch": "^2.6.1",
-    "puppeteer": "^12.0.1",
-    "puppeteer-extra": "^3.2.3",
-    "puppeteer-extra-plugin-stealth": "^2.9.0",
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.9"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aw1875/puppeteer-hcaptcha.git"
-  },
-  "keywords": [
-    "puppeteer",
-    "hcaptcha",
-    "solver",
-    "hcaptcha solver",
-    "puppeteer hcaptcha",
-    "hcaptcha-solver",
-    "puppeteerhcaptcha"
-  ],
-  "author": "Adam Wolf",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/aw1875/puppeteer-hcaptcha/issues"
-  },
-  "homepage": "https://github.com/aw1875/puppeteer-hcaptcha#readme"
+    "name": "puppeteer-hcaptcha",
+    "version": "4.1.6",
+    "description": "A library to solve hcaptcha challenges that are automated within puppeteer and without",
+    "main": "hcaptcha.js",
+    "bundledDependencies": false,
+    "dependencies": {
+        "@aw1875/ghost-cursor": "^1.1.10",
+        "@tensorflow-models/coco-ssd": "^2.2.2",
+        "@tensorflow/tfjs-node": "^3.11.0",
+        "jwt-decode": "^3.1.2",
+        "node-fetch": "^2.6.1",
+        "puppeteer": "^12.0.1",
+        "puppeteer-extra": "^3.2.3",
+        "puppeteer-extra-plugin-stealth": "^2.9.0",
+        "request": "^2.88.2",
+        "request-promise-native": "^1.0.9"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/aw1875/puppeteer-hcaptcha.git"
+    },
+    "keywords": [
+        "puppeteer",
+        "hcaptcha",
+        "solver",
+        "hcaptcha solver",
+        "puppeteer hcaptcha",
+        "hcaptcha-solver",
+        "puppeteerhcaptcha"
+    ],
+    "author": "Adam Wolf",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/aw1875/puppeteer-hcaptcha/issues"
+    },
+    "homepage": "https://github.com/aw1875/puppeteer-hcaptcha#readme"
 }
