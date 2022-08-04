@@ -1,5 +1,11 @@
 ## hCaptcha solver for puppeteer
 
+#### ⚠️ Important ⚠️
+
+I'm currently searching for a better TFJS model as it seems the coco-ssd model thats currenly being used is struggling with hCaptchas images more frequently as they are now blurred a little. If you have any suggestions please create a new issue with the TFJS recommendation template so I can take a look. Thanks!
+
+---
+
 A library to solve hcaptcha challenges that are automated within puppeteer. You can automatically set response values where they should be so the only thing left for you is submitting the page or you can get the response token. Average response time is rougly 13 - 20 seconds with TensorFlow's Image Recognition.
 
 <img src="images/demo.gif" height="400px"/>
