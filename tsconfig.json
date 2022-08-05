@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "lib": [ "dom", "es2015" ],
+    "module": "es2022",
+    "moduleResolution": "node",
+    "noImplicitAny": false,
+    "outDir": "./lib",
+    "removeComments": true,
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es5",
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
