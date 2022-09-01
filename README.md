@@ -2,7 +2,7 @@
 
 #### ⚠️ Important ⚠️
 
-I'm currently searching for a better TFJS model as it seems the coco-ssd model thats currenly being used is struggling with hCaptchas images more frequently as they are now blurred a little. If you have any suggestions please create a new issue with the TFJS recommendation template so I can take a look. Thanks!
+I'm currently searching for a better TFJS model as it seems the coco-ssd model thats currently being used is struggling with hCaptchas images more frequently as they are now blurred a little. If you have any suggestions please create a new issue with the TFJS recommendation template so I can take a look. Thanks!
 
 ---
 
