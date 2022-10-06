@@ -266,6 +266,12 @@ namespace hCaptcha {
         }
     }
 
+    /**
+     * @description Exposed auto sovle function. Used for gaining solve token and automatically assigning it to the form for solving
+     * @param {string} url Url with hCaptcha
+     * @param {boolean?} withLogs Optional flag for enabling logging - Default value is false
+     * @returns {Promise<puppeteer.Browser | null>} Returns browser instance with solved token or null if it fails
+     */
     export const autoSolve = async (url: string, withLogs: boolean = false): Promise<puppeteer.Browser | null> => {
         const startTime = Date.now();
 
